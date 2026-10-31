@@ -7,13 +7,15 @@ import { payloads, chunks, webhookUrl, send, announce } from './announce-release
 
 const release = { id: 12, tag_name: 'v0.0.19', html_url: 'https://github.com/example/releases/tag/0.0.19', published_at: '2026-10-30T20:00:00Z', body: '- Fixed shipping\n- Improved settings', assets: [{ name: 'Relay-stable-Setup.exe', browser_download_url: 'https://github.com/example/setup.exe' }] };
 const webhook = 'https://discord.com/api/webhooks/123/test-token';
-test('release post has changelog, app accent, links and attached footer logo', () => {
+test('release post has changelog, app accent and footer without emoji or download links', () => {
   const [payload] = payloads(release);
-  assert.equal(payload.embeds[0].title, '🚀\u00a0\u00a0Arcane AIO 0.0.19');
+  assert.equal(payload.embeds[0].title, 'Arcane AIO 0.0.19');
   assert.ok(payload.embeds[0].description.endsWith(release.body));
   assert.equal(payload.embeds[0].color, 0xC08CCD);
   assert.deepEqual(payload.embeds[0].footer, { text: 'Arcane Tech.', icon_url: 'attachment://arcane-tech-discord.png' });
-  assert.ok(payload.embeds[0].fields[0].value.includes('Windows installer'));
+  assert.equal(payload.embeds[0].fields, undefined);
+  assert.equal(payload.embeds[0].url, undefined);
+  assert.ok(!JSON.stringify(payload).includes('https://'));
   assert.deepEqual(payload.allowed_mentions, { parse: [] });
 });
 test('drafts and prereleases never announce', () => {

@@ -28,17 +28,14 @@ export function payloads(release) {
   if (url.origin !== 'https://github.com') throw new Error('Invalid release link.');
   const notes = String(release.body ?? '').trim() || 'See the release page for details.';
   const parts = chunks(notes);
-  const installer = release.assets?.find(asset => asset.name === 'Relay-stable-Setup.exe');
   return parts.map((part, index) => ({
     username: 'Arcane AIO',
     allowed_mentions: { parse: [] },
     attachments: [{ id: 0, filename: logoName }],
     embeds: [{
-      title: `🚀\u00a0\u00a0Arcane AIO ${version}${parts.length > 1 ? ` (${index + 1}/${parts.length})` : ''}`,
-      url: release.html_url,
+      title: `Arcane AIO ${version}${parts.length > 1 ? ` (${index + 1}/${parts.length})` : ''}`,
       color: 0xC08CCD, // AppTheme's dark-mode Accent (navigation indicator).
-      description: `${index === 0 ? 'A new update is available. Update in the app or download it below.\n\n' : ''}**Changelog**\n${part}`,
-      ...(index === 0 ? { fields: [{ name: 'Download', value: `[View release](${release.html_url})${installer ? ` • [Windows installer](${installer.browser_download_url})` : ''}` }] } : {}),
+      description: `${index === 0 ? 'A new update is available in the app.\n\n' : ''}**Changelog**\n${part}`,
       footer: { text: 'Arcane Tech.', icon_url: `attachment://${logoName}` },
       timestamp: release.published_at,
     }],
