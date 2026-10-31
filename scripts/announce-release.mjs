@@ -36,7 +36,7 @@ export function payloads(release) {
     embeds: [{
       title: `🚀\u00a0\u00a0Arcane AIO ${version}${parts.length > 1 ? ` (${index + 1}/${parts.length})` : ''}`,
       url: release.html_url,
-      color: 0x60A5FA,
+      color: 0xC08CCD, // AppTheme's dark-mode Accent (navigation indicator).
       description: `${index === 0 ? 'A new update is available. Update in the app or download it below.\n\n' : ''}**Changelog**\n${part}`,
       ...(index === 0 ? { fields: [{ name: 'Download', value: `[View release](${release.html_url})${installer ? ` • [Windows installer](${installer.browser_download_url})` : ''}` }] } : {}),
       footer: { text: 'Arcane Tech.', icon_url: `attachment://${logoName}` },
