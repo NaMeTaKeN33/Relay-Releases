@@ -10,6 +10,7 @@ const webhook = 'https://discord.com/api/webhooks/123/test-token';
 test('release post has changelog, app accent and footer without emoji or download links', () => {
   const [payload] = payloads(release);
   assert.equal(payload.embeds[0].title, 'Arcane AIO 0.0.19');
+  assert.deepEqual(payload.embeds[0].author, { name: 'Arcane AIO Changelogs', icon_url: 'attachment://arcane-tech-discord.png' });
   assert.ok(payload.embeds[0].description.endsWith(release.body));
   assert.equal(payload.embeds[0].color, 0xC08CCD);
   assert.deepEqual(payload.embeds[0].footer, { text: 'Arcane Tech.', icon_url: 'attachment://arcane-tech-discord.png' });

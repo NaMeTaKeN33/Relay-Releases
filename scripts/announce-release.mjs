@@ -33,6 +33,7 @@ export function payloads(release) {
     allowed_mentions: { parse: [] },
     attachments: [{ id: 0, filename: logoName }],
     embeds: [{
+      author: { name: 'Arcane AIO Changelogs', icon_url: `attachment://${logoName}` },
       title: `Arcane AIO ${version}${parts.length > 1 ? ` (${index + 1}/${parts.length})` : ''}`,
       color: 0xC08CCD, // AppTheme's dark-mode Accent (navigation indicator).
       description: `${index === 0 ? 'A new update is available in the app.\n\n' : ''}**Changelog**\n${part}`,
