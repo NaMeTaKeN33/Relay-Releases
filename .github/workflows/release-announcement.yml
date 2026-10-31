@@ -1,0 +1,65 @@
+name: Announce Arcane AIO release
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Published release tag
+        required: true
+        type: string
+      preview:
+        description: Generate a preview without posting to Discord
+        default: true
+        type: boolean
+permissions:
+  contents: read
+concurrency:
+  group: discord-release-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+jobs:
+  announce:
+    if: github.event_name == 'workflow_dispatch' || (!github.event.release.draft && !github.event.release.prerelease)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate announcement formatter
+        run: node --test scripts/announce-release.test.mjs
+      - name: Fetch published changelog
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > release.json
+      - uses: actions/cache/restore@v4
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.preview) }}
+        with:
+          path: .announcement-state
+          key: discord-release-${{ github.event.release.tag_name || inputs.tag }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: discord-release-${{ github.event.release.tag_name || inputs.tag }}-
+      - name: Post release announcement
+        env:
+          DISCORD_RELEASE_WEBHOOK_URL: ${{ secrets.DISCORD_RELEASE_WEBHOOK_URL }}
+          PREVIEW: ${{ github.event_name == 'workflow_dispatch' && inputs.preview }}
+        run: |
+          if [ "$PREVIEW" = "true" ]; then
+            node scripts/announce-release.mjs release.json --preview
+          else
+            node scripts/announce-release.mjs release.json
+          fi
+      - uses: actions/cache/save@v4
+        if: ${{ always() && !(github.event_name == 'workflow_dispatch' && inputs.preview) && hashFiles('.announcement-state/*.json') != '' }}
+        with:
+          path: .announcement-state
+          key: discord-release-${{ github.event.release.tag_name || inputs.tag }}-${{ github.run_id }}-${{ github.run_attempt }}
+      - uses: actions/upload-artifact@v4
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.preview }}
+        with:
+          name: release-announcement-preview
+          path: artifacts/release-announcement-preview.json
